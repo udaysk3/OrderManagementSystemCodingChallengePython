@@ -1,7 +1,7 @@
 from dao.OrderProcessor import OrderProcessor
 from entity.Product import Product
 from entity.User import User
-
+from exception import UserNotFound, OrderNotFound
 class OrderManagement:
     def __init__(self):
         self.orderProcessor = OrderProcessor()
@@ -50,7 +50,14 @@ class OrderManagement:
     def cancel_order(self):
         userId = int(input("Enter User ID: "))
         orderId = int(input("Enter Order ID: "))
-        self.orderProcessor.cancelOrder(userId, orderId)
+        try:
+            self.orderProcessor.cancelOrder(userId, orderId)
+        except UserNotFound as e:
+            print("User not found:", e)
+        except OrderNotFound as e:
+            print("Order not found:", e)
+        except Exception as e:
+            print("An error occurred:", e)
 
     def get_all_products(self):
         products = self.orderProcessor.getAllProducts()

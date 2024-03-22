@@ -1,5 +1,6 @@
 from .IOrderManagementRepository import IOrderManagementRepository
-from exception import UserNotFound, OrderNotFound
+from exception.UserNotFound import UserNotFound
+from exception.OrderNotFound import OrderNotFound
 from util.DBConnUtil import DBConnUtil
 from entity.User import User
 
@@ -9,7 +10,6 @@ class OrderProcessor(IOrderManagementRepository):
             connection = DBConnUtil.getDBConn()
             if connection:
                 cursor = connection.cursor()
-                # Check if the user exists, if not, create the user
                 cursor.execute("SELECT COUNT(*) FROM Users WHERE userId = ?", user.getUserId())
                 user_count = cursor.fetchone()[0]
                 if user_count == 0:
@@ -45,14 +45,12 @@ class OrderProcessor(IOrderManagementRepository):
                 if user_count == 0:
                     raise UserNotFound(f"User with ID {userId} not found.")
 
-                # Check if the order exists for the given user
-                cursor.execute("SELECT COUNT(*) FROM Order WHERE userId = ? AND orderId = ?", userId, orderId)
+                cursor.execute("SELECT COUNT(*) FROM [Order] WHERE userId = ? AND orderId = ?", userId, orderId)
                 order_count = cursor.fetchone()[0]
                 if order_count == 0:
                     raise OrderNotFound(f"Order with ID {orderId} not found for user {userId}.")
-
-                # Proceed with cancelling the order
-                cursor.execute("DELETE FROM Order WHERE userId = ? AND orderId = ?", userId, orderId)
+                cursor.execute("DELETE FROM [OrderProduct] WHERE orderId = ?", orderId)
+                cursor.execute("DELETE FROM [Order] WHERE userId = ? AND orderId = ?", userId, orderId)
                 connection.commit()
                 print("Order cancelled successfully.")
             else:
